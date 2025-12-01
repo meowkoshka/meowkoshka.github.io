@@ -23,8 +23,6 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            animation: fadeInUp 1s ease-out forwards;
-            opacity: 0;
         }
 
         .container {
@@ -36,7 +34,6 @@
             border-radius: 20px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             backdrop-filter: blur(5px);
-            animation: fadeInUp 1s ease-out 0.3s forwards;
         }
 
         h1 {
@@ -62,18 +59,6 @@
             z-index: 5;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-
         @keyframes fadeInOut {
             0% { opacity: 0; transform: scale(0.5); }
             20% { opacity: 1; transform: scale(1); }
@@ -92,7 +77,6 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            animation: fadeInUp 1s ease-out 0.6s forwards;
         }
 
         .music-controls {
@@ -179,9 +163,81 @@
             bottom: 10px;
         }
     }
+        #loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 1.5s ease, background 2s ease;
+    }
+
+    #loader.fade-out {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    #catImage {
+        max-width: 300px;
+        max-height: 300px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        margin-bottom: 30px;
+    }
+
+    #catImage:hover {
+        transform: scale(1.05);
+    }
+
+    #giftText {
+        color: white;
+        font-size: 2.5rem;
+        text-align: center;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        to {
+            text-shadow: 0 0 20px #e39e9e, 0 0 30px #d9b7f7;
+        }
+    }
+
+    /* Плавное появление основного контента */
+    .container {
+        opacity: 0;
+        animation: fadeIn 1.5s ease 0.5s forwards;
+    }
+
+    .controls {
+        opacity: 0;
+        animation: fadeIn 1.5s ease 1s forwards;
+    }
+
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+        }
+    }
     </style>
 </head>
 <body>
+    <div id="loader">
+        <img id="catImage" src="cats/1.gif" alt="Котик">
+        <div id="giftText">🎁 Тебе подарок от кошьки</div>
+    </div>
+
     <div class="container">
         <h1>Миу ❤️</h1>
         <h2>5000 на косметику 🎁</h2>
@@ -210,271 +266,276 @@
 
     <script>
         // Плейлист с локальной музыкой
-        const playlist = [
-            {
-                title: "Sextape",
-                url: "music/Sextape.mp3"
-            },
-            {
-                title: "Diamond Eyes",
-                url: "music/Diamond Eyes.mp3"
-            },
-            {
-                title: "Rosemary",
-                url: "music/Rosemary.mp3"
-            }
-        ];
+        // Плейлист с локальной музыкой
+const playlist = [
+    {
+        title: "Sextape",
+        url: "music/Sextape.mp3"
+    },
+    {
+        title: "Diamond Eyes", 
+        url: "music/Diamond Eyes.mp3"
+    },
+    {
+        title: "Rosemary",
+        url: "music/Rosemary.mp3"
+    }
+];
 
-        // Локальные гифки и картинки
-        const localImages = [
-            "cats/1.gif", // Замените на ваши пути
-            "cats/2.gif",
-            "cats/3.gif",
-            "cats/4.gif",
-            "cats/5.gif",
-            "cats/6.gif",
-            "cats/7.gif",
-            "cats/8.gif"
-        ];
+// Локальные гифки и картинки
+const localImages = [
+    "cats/1.gif",
+    "cats/2.gif", 
+    "cats/3.gif",
+    "cats/4.gif",
+    "cats/5.gif",
+    "cats/6.gif",
+    "cats/7.gif",
+    "cats/8.gif"
+];
 
-        // Элементы DOM
-        const backgroundMusic = document.getElementById('backgroundMusic');
-        const playMusicButton = document.getElementById('playMusic');
-        const pauseMusicButton = document.getElementById('pauseMusic');
-        const prevSongButton = document.getElementById('prevSong');
-        const nextSongButton = document.getElementById('nextSong');
-        const songTitle = document.getElementById('songTitle');
-        const fireworksContainer = document.getElementById('fireworks-container');
+// Элементы DOM
+const backgroundMusic = document.getElementById('backgroundMusic');
+const playMusicButton = document.getElementById('playMusic');
+const pauseMusicButton = document.getElementById('pauseMusic');
+const prevSongButton = document.getElementById('prevSong');
+const nextSongButton = document.getElementById('nextSong');
+const songTitle = document.getElementById('songTitle');
+const fireworksContainer = document.getElementById('fireworks-container');
+const loader = document.getElementById('loader');
+const catImage = document.getElementById('catImage');
 
-        // Переменные состояния
-        let currentSongIndex = 0;
-        let imageInterval;
-        let fireworksInstance;
-        let confettiInterval;
+// Переменные состояния
+let currentSongIndex = 0;
+let imageInterval;
+let fireworksInstance;
+let confettiInterval;
 
-        // Настройки конфетти
-        const minConfettiScale = 0.5;
-        const maxConfettiScale = 1;
-        const minConfettiSpeed = 15; // Уменьшенная скорость
-        const maxConfettiSpeed = 22; // Уменьшенная скорость
-        const minConfettiGravity = 0.6;
-        const maxConfettiGravity = 1.1;
-        const colors = ['#c1a5e5', '#e6d4f7', '#8a4dbb', '#ffffff']; // Добавил теплые цвета
+// Настройки конфетти
+const minConfettiScale = 0.5;
+const maxConfettiScale = 1;
+const minConfettiSpeed = 15;
+const maxConfettiSpeed = 22;
+const minConfettiGravity = 0.6;
+const maxConfettiGravity = 1.1;
+const colors = ['#c1a5e5', '#e6d4f7', '#8a4dbb', '#ffffff'];
 
-        // Функция создания конфетти
-        const createParty = () => {
-            // Left Confetti
-            confetti.create({
-                x: 0.001,
-                y: 0.5,
-                count: 2, // Уменьшил количество
-                gravity: [
-                    randomNumber(minConfettiGravity, maxConfettiGravity),
-                    randomNumber(minConfettiGravity, maxConfettiGravity),
-                    randomNumber(minConfettiGravity, maxConfettiGravity),
-                ],
-                ticks: 200,
-                scale: [
-                    randomNumber(minConfettiScale, maxConfettiScale),
-                    randomNumber(minConfettiScale, maxConfettiScale),
-                    randomNumber(minConfettiScale, maxConfettiScale)
-                ],
-                speed: randomNumber(minConfettiSpeed, maxConfettiSpeed),
-                decay: 0.95,
-                spread: 40, // Уменьшил разброс
-                angle: 50,
-                shapes: ['square', 'ellipse'],
-                colors: colors
-            });
+// Функция создания конфетти
+const createParty = () => {
+    // Left Confetti
+    confetti.create({
+        x: 0.001,
+        y: 0.5,
+        count: 2,
+        gravity: [
+            randomNumber(minConfettiGravity, maxConfettiGravity),
+            randomNumber(minConfettiGravity, maxConfettiGravity),
+            randomNumber(minConfettiGravity, maxConfettiGravity),
+        ],
+        ticks: 200,
+        scale: [
+            randomNumber(minConfettiScale, maxConfettiScale),
+            randomNumber(minConfettiScale, maxConfettiScale),
+            randomNumber(minConfettiScale, maxConfettiScale)
+        ],
+        speed: randomNumber(minConfettiSpeed, maxConfettiSpeed),
+        decay: 0.95,
+        spread: 40,
+        angle: 50,
+        shapes: ['square', 'ellipse'],
+        colors: colors
+    });
 
-            // Right Confetti
-            confetti.create({
-                x: 1.999,
-                y: 0.5,
-                count: 2, // Уменьшил количество
-                gravity: [
-                    randomNumber(minConfettiGravity, maxConfettiGravity),
-                    randomNumber(minConfettiGravity, maxConfettiGravity),
-                    randomNumber(minConfettiGravity, maxConfettiGravity),
-                ],
-                ticks: 200,
-                scale: [
-                    randomNumber(minConfettiScale, maxConfettiScale),
-                    randomNumber(minConfettiScale, maxConfettiScale),
-                    randomNumber(minConfettiScale, maxConfettiScale)
-                ],
-                speed: randomNumber(minConfettiSpeed, maxConfettiSpeed),
-                decay: 0.95,
-                spread: 40, // Уменьшил разброс
-                angle: 130,
-                shapes: ['square', 'ellipse'],
-                colors: colors
-            });
-        };
+    // Right Confetti
+    confetti.create({
+        x: 1.999,
+        y: 0.5,
+        count: 2,
+        gravity: [
+            randomNumber(minConfettiGravity, maxConfettiGravity),
+            randomNumber(minConfettiGravity, maxConfettiGravity),
+            randomNumber(minConfettiGravity, maxConfettiGravity),
+        ],
+        ticks: 200,
+        scale: [
+            randomNumber(minConfettiScale, maxConfettiScale),
+            randomNumber(minConfettiScale, maxConfettiScale),
+            randomNumber(minConfettiScale, maxConfettiScale)
+        ],
+        speed: randomNumber(minConfettiSpeed, maxConfettiSpeed),
+        decay: 0.95,
+        spread: 40,
+        angle: 130,
+        shapes: ['square', 'ellipse'],
+        colors: colors
+    });
+};
 
-        function randomNumber(min, max) {
-            return Math.random() * (max - min) + min;
-        }
+function randomNumber(min, max) {
+    return Math.random() * (max - min) + min;
+}
 
-        // Инициализация музыки
-        function initMusic() {
-            loadSong(currentSongIndex);
+// Функция для смены загрузочного экрана
+function startTransition() {
+    // Начинаем плавное изменение фона
+    loader.style.background = 'linear-gradient(41deg, #d9b7f7, #e39e9e)';
+    
+    // Через 2 секунды скрываем загрузочный экран
+    setTimeout(() => {
+        loader.classList.add('fade-out');
+        
+        // Запускаем основную анимацию
+        setTimeout(() => {
+            loader.style.display = 'none';
+            startMainContent();
+        }, 1500);
+    }, 2000);
+}
 
-            playMusicButton.addEventListener('click', () => {
-                backgroundMusic.play();
-            });
-
-            pauseMusicButton.addEventListener('click', () => {
-                backgroundMusic.pause();
-            });
-
-            prevSongButton.addEventListener('click', () => {
-                currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
-                loadSong(currentSongIndex);
-                if (!backgroundMusic.paused) {
-                    backgroundMusic.play();
-                }
-            });
-
-            nextSongButton.addEventListener('click', () => {
-                currentSongIndex = (currentSongIndex + 1) % playlist.length;
-                loadSong(currentSongIndex);
-                if (!backgroundMusic.paused) {
-                    backgroundMusic.play();
-                }
-            });
-        }
-
-        // Загрузка песни
-        function loadSong(index) {
-            backgroundMusic.src = playlist[index].url;
-            songTitle.textContent = playlist[index].title;
-        }
-
-        // Создание изображений
-        function createImage() {
-            const image = document.createElement('img');
-            image.classList.add('image');
-
-            // Случайная позиция
-            const isMobile = window.innerWidth <= 768;
-            const maxSize = isMobile ? 120 : 180;
-            const x = Math.random() * (window.innerWidth - maxSize);
-            const y = Math.random() * (window.innerHeight - maxSize);
-
-            image.style.left = `${x}px`;
-            image.style.top = `${y}px`;
-
-            // Случайная гифка из локальных
-            const randomImage = localImages[Math.floor(Math.random() * localImages.length)];
-            image.src = randomImage;
-
-            document.body.appendChild(image);
-
-            // Удаление элемента после анимации
-            setTimeout(() => {
-                if (image.parentNode) {
-                    image.parentNode.removeChild(image);
-                }
-            }, 5000);
-        }
-
-        // Инициализация конфетти
-        function initConfetti() {
-            // Запускаем конфетти с уменьшенной частотой
-            confettiInterval = setInterval(() => {
-                createParty();
-            }, 100); // Увеличил интервал для меньшего количества конфетти
-        }
-
-        // Инициализация фейерверков
-        function initFireworks() {
-            fireworksInstance = new Fireworks.default(fireworksContainer, {
-                hue: { min: 300, max: 360 }, // Теплые цвета (розовые, фиолетовые)
-                acceleration: 1.01,
-                brightness: { min: 40, max: 70 }, // Менее яркие
-                decay: { min: 0.015, max: 0.03 },
-                delay: { min: 20, max: 70 }, // Реже фейерверки
-                explosion: 3, // Меньше взрывов
-                flickering: 30,
-                intensity: 20, // Меньшая интенсивность
-                friction: 0.97,
-                gravity: 1.5,
-                opacity: 0.4, // Более прозрачные
-                particles: 40, // Меньше частиц
-                traceLength: 2,
-                traceSpeed: 8,
-                rocketsPoint: {
-                    min: 0,
-                    max: 80
-                },
-                lineWidth: {
-                    explosion: { min: 0.8, max: 2 },
-                    trace: { min: 0.8, max: 1.5 }
-                },
-                lineStyle: 'round',
-                sound: {
-                    enable: false
-                }
-            });
-
-            fireworksInstance.start();
-        }
-
-        // Остановка конфетти и фейерверков через 3 минуты
-        function stopEffectsAfter3Minutes() {
-            setTimeout(() => {
-                // Останавливаем фейерверки
-                if (fireworksInstance) {
-                    fireworksInstance.stop();
-                }
-
-                // Останавливаем конфетти
-                if (confettiInterval) {
-                    clearInterval(confettiInterval);
-                }
-
-                console.log("Конфетти и фейерверки остановлены через 7 минут");
-            }, 420000); // 7 минут = 420000ms
-        }
-
-        // Запуск создания изображений
-        function startImageCreation() {
-            imageInterval = setInterval(createImage, 800); // Реже появляются гифки
-        }
-
-        window.addEventListener('resize', function() {
-        // Перезапускаем создание гифок с новыми размерами
-        clearInterval(imageInterval);
-        startImageCreation();
+// Запуск основного контента
+function startMainContent() {
+    initMusic();
+    initConfetti();
+    initFireworks();
+    startImageCreation();
+    stopEffectsAfter3Minutes();
+    
+    // Автовоспроизведение музыки
+    setTimeout(() => {
+        backgroundMusic.play().catch(e => {
+            console.log("Автовоспроизведение заблокировано");
         });
+    }, 500);
+}
 
-        // Инициализация при загрузке страницы
-        window.addEventListener('load', () => {
-            // Плавное появление уже через CSS
-            initMusic();
-            initConfetti();
-            initFireworks();
-            startImageCreation();
-            stopEffectsAfter3Minutes();
-            
-            // Автовоспроизведение музыки через 1 секунду
-            setTimeout(() => {
-                backgroundMusic.play().catch(e => {
-                    console.log("Автовоспроизведение заблокировано:", e);
-                    // Показываем кнопку воспроизведения
-                    playMusicButton.style.display = 'block';
-                });
-            }, 1000);
-        });
+// Инициализация музыки
+function initMusic() {
+    loadSong(currentSongIndex);
 
-        // Обработка ошибок загрузки изображений
-        document.addEventListener('error', function(e) {
-            if (e.target.tagName === 'IMG') {
-                console.log('Ошибка загрузки изображения:', e.target.src);
-                e.target.style.display = 'none';
-            }
-        }, true);
+    playMusicButton.addEventListener('click', () => {
+        backgroundMusic.play();
+    });
+
+    pauseMusicButton.addEventListener('click', () => {
+        backgroundMusic.pause();
+    });
+
+    prevSongButton.addEventListener('click', () => {
+        currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+        loadSong(currentSongIndex);
+        if (!backgroundMusic.paused) {
+            backgroundMusic.play();
+        }
+    });
+
+    nextSongButton.addEventListener('click', () => {
+        currentSongIndex = (currentSongIndex + 1) % playlist.length;
+        loadSong(currentSongIndex);
+        if (!backgroundMusic.paused) {
+            backgroundMusic.play();
+        }
+    });
+}
+
+// Загрузка песни
+function loadSong(index) {
+    backgroundMusic.src = playlist[index].url;
+    songTitle.textContent = playlist[index].title;
+}
+
+// Создание изображений
+function createImage() {
+    const image = document.createElement('img');
+    image.classList.add('image');
+
+    const x = Math.random() * (window.innerWidth - 180);
+    const y = Math.random() * (window.innerHeight - 180);
+    image.style.left = `${x}px`;
+    image.style.top = `${y}px`;
+
+    const randomImage = localImages[Math.floor(Math.random() * localImages.length)];
+    image.src = randomImage;
+
+    document.body.appendChild(image);
+
+    setTimeout(() => {
+        if (image.parentNode) {
+            image.parentNode.removeChild(image);
+        }
+    }, 5000);
+}
+
+// Инициализация конфетти
+function initConfetti() {
+    confettiInterval = setInterval(() => {
+        createParty();
+    }, 100);
+}
+
+// Инициализация фейерверков
+function initFireworks() {
+    fireworksInstance = new Fireworks.default(fireworksContainer, {
+        hue: { min: 300, max: 360 },
+        acceleration: 1.01,
+        brightness: { min: 40, max: 70 },
+        decay: { min: 0.015, max: 0.03 },
+        delay: { min: 20, max: 70 },
+        explosion: 3,
+        flickering: 30,
+        intensity: 20,
+        friction: 0.97,
+        gravity: 1.5,
+        opacity: 0.4,
+        particles: 40,
+        traceLength: 2,
+        traceSpeed: 8,
+        rocketsPoint: {
+            min: 0,
+            max: 80
+        },
+        lineWidth: {
+            explosion: { min: 0.8, max: 2 },
+            trace: { min: 0.8, max: 1.5 }
+        },
+        lineStyle: 'round',
+        sound: {
+            enable: false
+        }
+    });
+
+    fireworksInstance.start();
+}
+
+// Остановка конфетти и фейерверков через 3 минуты
+function stopEffectsAfter3Minutes() {
+    setTimeout(() => {
+        if (fireworksInstance) {
+            fireworksInstance.stop();
+        }
+
+        if (confettiInterval) {
+            clearInterval(confettiInterval);
+        }
+
+        console.log("Конфетти и фейерверки остановлены через 7 минут");
+    }, 420000);
+}
+
+// Запуск создания изображений
+function startImageCreation() {
+    imageInterval = setInterval(createImage, 800);
+}
+
+// Обработка клика по коту
+catImage.addEventListener('click', startTransition);
+
+// Обработка ошибок загрузки изображений
+document.addEventListener('error', function(e) {
+    if (e.target.tagName === 'IMG') {
+        console.log('Ошибка загрузки изображения:', e.target.src);
+        e.target.style.display = 'none';
+    }
+}, true);
     </script>
 </body>
 </html>
