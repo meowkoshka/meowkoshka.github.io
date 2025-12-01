@@ -163,73 +163,94 @@
             bottom: 10px;
         }
     }
-        #loader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        transition: opacity 1.5s ease, background 2s ease;
-    }
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-    #loader.fade-out {
-        opacity: 0;
-        pointer-events: none;
-    }
+#loader.fade-out {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.5s ease;
+}
 
-    #catImage {
-        max-width: 300px;
-        max-height: 300px;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-        margin-bottom: 30px;
-    }
+#catImage {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 1s ease;
+    margin-bottom: 30px;
+}
 
-    #catImage:hover {
-        transform: scale(1.05);
-    }
+#catImage:hover {
+    transform: scale(1.05);
+}
 
-    #giftText {
-        color: white;
-        font-size: 2.5rem;
-        text-align: center;
-        font-weight: bold;
+#giftText {
+    color: white;
+    font-size: 2.5rem;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    animation: glow 2s ease-in-out infinite alternate;
+    transition: opacity 1s ease;
+}
+
+@keyframes glow {
+    from {
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        animation: glow 2s ease-in-out infinite alternate;
     }
+    to {
+        text-shadow: 0 0 20px #e39e9e, 0 0 30px #d9b7f7;
+    }
+}
 
-    @keyframes glow {
-        from {
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-        to {
-            text-shadow: 0 0 20px #e39e9e, 0 0 30px #d9b7f7;
-        }
+@keyframes gradientTransition {
+    0% {
+        background: #000000;
     }
+    100% {
+        background: linear-gradient(41deg, #d9b7f7, #e39e9e);
+    }
+}
 
-    /* Плавное появление основного контента */
-    .container {
-        opacity: 0;
-        animation: fadeIn 1.5s ease 0.5s forwards;
-    }
+#loader.transitioning {
+    animation: gradientTransition 2.5s ease forwards;
+}
 
-    .controls {
-        opacity: 0;
-        animation: fadeIn 1.5s ease 1s forwards;
-    }
+#loader.transitioning #catImage,
+#loader.transitioning #giftText {
+    opacity: 0;
+}
 
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
-        }
+/* ОСНОВНОЙ КОНТЕНТ */
+.container, .controls {
+    opacity: 0;
+}
+
+body.loaded .container {
+    animation: fadeIn 1s ease 0.5s forwards;
+}
+
+body.loaded .controls {
+    animation: fadeIn 1s ease 1s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
     }
+}
     @keyframes gradientTransition {
     0% {
         background: #000000;
@@ -389,23 +410,27 @@ function randomNumber(min, max) {
 
 // Функция для смены загрузочного экрана
 function startTransition() {
-    // Отключаем повторные нажатия
+    // 1. Сразу скрываем hover эффект
+    catImage.style.transform = 'scale(1)';
     catImage.style.pointerEvents = 'none';
-    catImage.style.transform = 'scale(0.95)';
     
-    // Добавляем класс для анимации фона
+    // 2. Добавляем класс чтобы плавно скрыть кота и надпись
     loader.classList.add('transitioning');
     
-    // Через 3 секунды скрываем загрузочный экран
+    // 3. Через 2.5 секунды (когда фон сменился и кот исчез)
     setTimeout(() => {
+        // Добавляем fade-out для всего loader
         loader.classList.add('fade-out');
         
-        // Запускаем основную анимацию
+        // Добавляем класс loaded к body чтобы показать основной контент
+        document.body.classList.add('loaded');
+        
+        // Через 1.5 секунды скрываем loader и запускаем основной контент
         setTimeout(() => {
             loader.style.display = 'none';
             startMainContent();
         }, 1500);
-    }, 3000);
+    }, 2500);
 }
 
 // Запуск основного контента
