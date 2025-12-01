@@ -230,6 +230,18 @@
             opacity: 1;
         }
     }
+    @keyframes gradientTransition {
+    0% {
+        background: #000000;
+    }
+    100% {
+        background: linear-gradient(41deg, #d9b7f7, #e39e9e);
+    }
+}
+
+#loader.transitioning {
+    animation: gradientTransition 3s ease forwards;
+}
     </style>
 </head>
 <body>
@@ -377,19 +389,59 @@ function randomNumber(min, max) {
 
 // Функция для смены загрузочного экрана
 function startTransition() {
-    // Начинаем плавное изменение фона
-    loader.style.background = 'linear-gradient(41deg, #d9b7f7, #e39e9e)';
+    // Отключаем повторные нажатия
+    catImage.style.pointerEvents = 'none';
     
-    // Через 2 секунды скрываем загрузочный экран
-    setTimeout(() => {
-        loader.classList.add('fade-out');
+    // Плавно меняем фон с черного на основной градиент за 3 секунды
+    let startTime = Date.now();
+    const duration = 3000; // 3 секунды
+    
+    function animateBackground() {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
         
-        // Запускаем основную анимацию
-        setTimeout(() => {
-            loader.style.display = 'none';
-            startMainContent();
-        }, 1500);
-    }, 2000);
+        // Интерполяция между черным и финальным градиентом
+        if (progress < 1) {
+            // Вычисляем промежуточный цвет
+            const darkToGradient = `linear-gradient(41deg, 
+                ${interpolateColor('#000000', '#d9b7f7', progress)}, 
+                ${interpolateColor('#000000', '#e39e9e', progress)})`;
+            
+            loader.style.background = darkToGradient;
+            requestAnimationFrame(animateBackground);
+        } else {
+            // Когда анимация завершена
+            setTimeout(() => {
+                loader.classList.add('fade-out');
+                
+                // Запускаем основную анимацию
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    startMainContent();
+                }, 1500);
+            }, 500);
+        }
+    }
+    
+    animateBackground();
+}
+
+function interpolateColor(color1, color2, factor) {
+    if (arguments.length < 3) { 
+        factor = 0.5; 
+    }
+    
+    const result = color1.slice();
+    for (let i = 1; i < 7; i += 2) {
+        const c1 = parseInt(color1.substr(i, 2), 16);
+        const c2 = parseInt(color2.substr(i, 2), 16);
+        const c = Math.round(c1 + factor * (c2 - c1));
+        result[i] = c.toString(16).padStart(2, '0');
+        result[i+1] = result[i];
+    }
+    
+    return '#' + result.join('');
 }
 
 // Запуск основного контента
