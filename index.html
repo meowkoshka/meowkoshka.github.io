@@ -391,57 +391,21 @@ function randomNumber(min, max) {
 function startTransition() {
     // Отключаем повторные нажатия
     catImage.style.pointerEvents = 'none';
+    catImage.style.transform = 'scale(0.95)';
     
-    // Плавно меняем фон с черного на основной градиент за 3 секунды
-    let startTime = Date.now();
-    const duration = 3000; // 3 секунды
+    // Добавляем класс для анимации фона
+    loader.classList.add('transitioning');
     
-    function animateBackground() {
-        const currentTime = Date.now();
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+    // Через 3 секунды скрываем загрузочный экран
+    setTimeout(() => {
+        loader.classList.add('fade-out');
         
-        // Интерполяция между черным и финальным градиентом
-        if (progress < 1) {
-            // Вычисляем промежуточный цвет
-            const darkToGradient = `linear-gradient(41deg, 
-                ${interpolateColor('#000000', '#d9b7f7', progress)}, 
-                ${interpolateColor('#000000', '#e39e9e', progress)})`;
-            
-            loader.style.background = darkToGradient;
-            requestAnimationFrame(animateBackground);
-        } else {
-            // Когда анимация завершена
-            setTimeout(() => {
-                loader.classList.add('fade-out');
-                
-                // Запускаем основную анимацию
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                    startMainContent();
-                }, 1500);
-            }, 500);
-        }
-    }
-    
-    animateBackground();
-}
-
-function interpolateColor(color1, color2, factor) {
-    if (arguments.length < 3) { 
-        factor = 0.5; 
-    }
-    
-    const result = color1.slice();
-    for (let i = 1; i < 7; i += 2) {
-        const c1 = parseInt(color1.substr(i, 2), 16);
-        const c2 = parseInt(color2.substr(i, 2), 16);
-        const c = Math.round(c1 + factor * (c2 - c1));
-        result[i] = c.toString(16).padStart(2, '0');
-        result[i+1] = result[i];
-    }
-    
-    return '#' + result.join('');
+        // Запускаем основную анимацию
+        setTimeout(() => {
+            loader.style.display = 'none';
+            startMainContent();
+        }, 1500);
+    }, 3000);
 }
 
 // Запуск основного контента
